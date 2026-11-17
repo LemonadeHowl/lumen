@@ -295,3 +295,12 @@ th{background:var(--soft)}
 .slot.orden,.tiles.orden{flex-direction:column;align-items:stretch}
 .slot.orden .tile,.tiles.orden .tile{text-align:left}
 .orden-ok{margin:8px 0 0 1.2em;padding:0}
+
+/* Bloque «Tus datos» plegable */
+details.datos>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+details.datos>summary::-webkit-details-marker{display:none}
+details.datos>summary h3{margin:0}
+details.datos>summary h3::before{content:"▸";display:inline-block;width:1em;transition:transform .15s}
+details.datos[open]>summary h3::before{transform:rotate(90deg)}
+details.datos>summary .muted{font-size:.88rem}
+details.datos[open]>summary{margin-bottom:10px}

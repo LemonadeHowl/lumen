@@ -11,8 +11,6 @@
       <section class="hero"><h1>Aprende a tu ritmo y míralo en 3D</h1>
         <p>Un tutor que se adapta a ti en ciencias, idiomas y programación, y un laboratorio de maquetas para entender lo que estudias.</p></section>
       <div class="stats">
-        <div class="card stat"><b>${s.streak}</b><span>${s.streak === 1 ? 'día de racha' : 'días de racha'}</span></div>
-        <div class="card stat"><b>${s.xp}</b><span>puntos</span></div>
         <div class="card stat"><b>${s.due}</b><span>por repasar ahora</span></div>
         <div class="card stat"><b>${s.cards}</b><span>flashcards</span></div>
         <div class="card stat"><b>${s.mastered}/${s.total}</b><span>ejercicios dominados</span></div>
@@ -20,9 +18,9 @@
       <h4>Hoy</h4>
       <div class="today">
         <div class="card"><span class="pill">Reto del día</span><h3>${BANK[d.q.s].name} · ${Tutor.LV[d.q.l]}</h3>
-          <p class="muted">${d.done ? (d.ok ? 'Superado. Vuelve mañana a por otro.' : 'Ya lo has intentado. Mañana habrá uno nuevo.') : 'Un problema elegido para tu nivel. Si lo resuelves, ganas 20 puntos extra.'}</p>
+          <p class="muted">${d.done ? (d.ok ? 'Superado. Vuelve mañana a por otro.' : 'Ya lo has intentado. Mañana habrá uno nuevo.') : 'Un problema elegido para tu nivel, por si te apetece un desafío.'}</p>
           ${d.done ? '' : '<a class="btn" href="#/reto">Resolver el reto</a>'}</div>
-        ${dl ? `<div class="card"><span class="pill">Lección del día</span><h3>${dl.name} · ${esc(dl.unit)}</h3><p class="muted">${esc(dl.lesson)}: unos cinco minutos para mantener la racha.</p><a class="btn" href="${dl.href}">Empezar la lección</a></div>` : ''}
+        ${dl ? `<div class="card"><span class="pill">Lección del día</span><h3>${dl.name} · ${esc(dl.unit)}</h3><p class="muted">${esc(dl.lesson)}: unos cinco minutos.</p><a class="btn" href="${dl.href}">Empezar la lección</a></div>` : ''}
         <div class="card"><span class="pill">Maqueta del día</span><h3>${model.name}</h3><p class="muted">${esc(model.info[0])}</p><a class="btn ghost" href="#/lab/${model.id}">Explorar en 3D</a></div>
         <div class="card"><span class="pill">¿Sabías que…?</span><p class="fact">${esc(fact)}</p></div>
       </div>

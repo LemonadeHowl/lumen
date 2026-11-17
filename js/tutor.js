@@ -368,13 +368,14 @@
       h += `<a class="card folder" href="#/tutor/${a}"><div class="ftab"></div><h2>${name}</h2><p class="muted">${AREA_INFO[a]}</p>
         <div class="chips">${ids.map((id) => `<span class="chip" style="border-color:${BANK[id].color}">${BANK[id].name}</span>`).join('')}</div></a>`;
     });
-    h += `</div><div class="card" style="margin-top:28px"><h3 style="margin-top:0">Tus datos</h3>
+    // Plegado por defecto: solo se abre cuando hace falta (copia de seguridad, modo sin conexión, tamaño de letra)
+    h += `</div><details class="card datos" style="margin-top:28px"><summary><h3>Tus datos</h3><span class="muted">Copia de seguridad, uso sin conexión y tamaño de letra</span></summary>
       <p class="muted">El progreso y las flashcards se guardan solo en este navegador. Con una copia de seguridad puedes llevarlos a otro dispositivo o recuperarlos.</p>
       <div class="row"><button class="btn small" id="exp">Guardar copia de seguridad</button><button class="btn ghost small" id="imp">Restaurar una copia</button>
         <input type="file" id="impf" accept=".json,application/json" hidden><button class="btn ghost small" id="reset">Borrar todo mi progreso</button></div>
       <div id="offbox" hidden style="margin-top:14px"><div class="row"><button class="btn ghost small" id="off">Descargar todo para usar sin conexión</button><span class="muted" id="offst" style="font-size:.88rem"></span></div></div>
       <p class="muted" style="margin:14px 0 0">Tamaño de letra: <button class="btn ghost small" data-f="-1" aria-label="Letra más pequeña">A−</button>
-        <button class="btn ghost small" data-f="0">Normal</button> <button class="btn ghost small" data-f="1" aria-label="Letra más grande">A+</button></p></div>`;
+        <button class="btn ghost small" data-f="0">Normal</button> <button class="btn ghost small" data-f="1" aria-label="Letra más grande">A+</button></p></details>`;
     el.innerHTML = h;
     el.querySelector('#exp').onclick = () => {
       const a = document.createElement('a');
@@ -611,7 +612,7 @@
     function drawMeter() {
       if (queue) { el.querySelector('#pb').style.width = Math.round(100 * count / (count + queue.length + (done ? 0 : 1))) + '%'; return; }
       const x = stats(id);
-      meter.innerHTML = `<span>Nivel: <b>${LV[target(s)]}</b>${s.mode === 'auto' ? ' (adaptativo)' : ''}</span><span>Dominados: <b>${x.mastered}/${x.total}</b></span><span>Por repasar: <b>${x.due}</b></span><span>Puntos: <b>${S.xp}</b></span>`;
+      meter.innerHTML = `<span>Nivel: <b>${LV[target(s)]}</b>${s.mode === 'auto' ? ' (adaptativo)' : ''}</span><span>Dominados: <b>${x.mastered}/${x.total}</b></span><span>Por repasar: <b>${x.due}</b></span>`;
     }
     function next() {
       if (queue) { if (!queue.length) return finish(); cur = queue.shift(); }
@@ -627,7 +628,7 @@
       el.querySelector('#pb').style.width = '100%';
       const nl = LANGS[id] && !o.back && nextLesson(id);
       box.innerHTML = `<div class="finish"><div class="bigstars">${stars(st3)}</div><h2>${st3 === 3 ? '¡Lección perfecta!' : st3 === 2 ? '¡Lección completada!' : 'Lección terminada'}</h2>
-        <p class="muted">${errors ? errors + (errors === 1 ? ' fallo' : ' fallos') + ' por el camino' : 'Sin fallos'} · +30 puntos${added ? ' · ' + added + ' flashcards nuevas' : ''}</p>
+        <p class="muted">${errors ? errors + (errors === 1 ? ' fallo' : ' fallos') + ' por el camino' : 'Sin fallos'}${added ? ' · ' + added + ' flashcards nuevas' : ''}</p>
         <div class="fbact" style="justify-content:center">${added || st(id).deck.length ? `<a class="btn ghost" href="${P(id)}/flashcards">Ver flashcards</a>` : ''}
         ${nl ? `<a class="btn" href="${P(id)}/leccion/${nl.id}">Siguiente lección</a>` : `<a class="btn" href="${back}">Continuar</a>`}</div></div>`;
     }
@@ -783,7 +784,7 @@
       if (cur.e) h += `<p>${esc(cur.e)}</p>`;
       if (!ok && queue && retried[cur.id] === 1) { retried[cur.id] = 2; h += '<p class="muted">Volverá a salir al final de la lección.</p>'; }
       if (ch) h += `<p class="lvl">${ch > 0 ? 'Subes a nivel ' + LV[target(s)] + '. ¡Buen ritmo!' : 'Volvemos a nivel ' + LV[target(s)] + ' para afianzar la base.'}</p>`;
-      if (fixed) h += `<p class="lvl">${ok ? 'Reto del día superado: +20 puntos extra.' : 'Mañana tendrás un reto nuevo.'}</p>`;
+      if (fixed) h += `<p class="lvl">${ok ? 'Reto del día superado.' : 'Mañana tendrás un reto nuevo.'}</p>`;
       h += `<div class="fbact">${cur.m ? `<a class="btn ghost" href="#/lab/${cur.m}">Ver en 3D</a>` : ''}${fixed ? '<a class="btn" id="next" href="#/">Volver al inicio</a>' : '<button class="btn" id="next">Siguiente →</button>'}</div></div>`;
       const fb = box.querySelector('#fb'); fb.innerHTML = h;
       const nb = fb.querySelector('#next'); if (!fixed) nb.onclick = next; nb.focus();
