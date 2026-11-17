@@ -29,15 +29,14 @@
         <div class="ctrls" id="ctrls"></div></section>
       <aside class="lab-info card"><h2>${m.name}</h2>
         <div class="seg" id="lv">${[1, 2, 3].map((i) => `<button data-l="${i}">${LV[i]}</button>`).join('')}</div>
-        <p id="expl"></p>${m.noChips ? '<div id="side"></div>' : `<h4>Partes</h4>
-        <div class="chips${Object.keys(m.parts).length > 14 ? ' scroll' : ''}" id="chips">${chipsHtml(m)}</div>`}
         <div class="partbox" id="part"></div>
+        ${m.noChips ? '<div id="side"></div>' : `<h4>Partes</h4>
+        <div class="chips${Object.keys(m.parts).length > 14 ? ' scroll' : ''}" id="chips">${chipsHtml(m)}</div>`}
         <a class="btn" href="#/tutor/${m.subj}">Practicar ${BANK[m.subj].name} en el tutor</a>${m.credit ? `<p class="credit">${esc(m.credit)}</p>` : ''}</aside></div>`;
     const $ = (q) => el.querySelector(q), stage = $('#stage'), canvas = stage.querySelector('canvas'), hudEl = $('#hud'), tip = $('#tip');
 
     function info() {
       el.querySelectorAll('#lv button').forEach((b) => b.classList.toggle('on', +b.dataset.l === lvl));
-      $('#expl').textContent = m.info[lvl - 1];
       el.querySelectorAll('.chip').forEach((b) => b.classList.toggle('on', b.dataset.k === sel));
       const pt = sel && m.parts[sel];
       $('#part').innerHTML = pt ? `<b>${esc(pt.n)}</b><p>${esc(Array.isArray(pt.d) ? pt.d[lvl - 1] : pt.d)}</p>` : '<span class="muted">Selecciona una parte de la lista o tócala en la maqueta.</span>';

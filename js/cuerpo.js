@@ -254,14 +254,17 @@
       }
       function mount() {
         ui = document.createElement('div'); ui.className = 'atl';
-        ui.innerHTML = `<div class="atl-row"><b>Vista</b><button class="btn ghost small" data-v="tc">¾</button><button class="btn ghost small" data-v="f">Frontal</button>
+        // Vista y Sistemas van plegados para no ocupar espacio
+        ui.innerHTML = `<details class="atl-plg"><summary><b>Vista</b><span class="muted">Ángulo de cámara y separación</span></summary>
+          <div class="atl-row"><button class="btn ghost small" data-v="tc">¾</button><button class="btn ghost small" data-v="f">Frontal</button>
             <button class="btn ghost small" data-v="s">Lateral</button><button class="btn ghost small" data-v="b">Posterior</button>
-            <label class="atl-exp">Separar <input type="range" id="asep" min="0" max="100" value="0" aria-label="Separar la anatomía"><output id="asepo">0 %</output></label></div>
-          <div class="atl-row"><b>Sistemas</b><button class="btn ghost small" data-p="todos">Todos</button><button class="btn ghost small" data-p="esqueleto">Esqueleto</button>
+            <label class="atl-exp">Separar <input type="range" id="asep" min="0" max="100" value="0" aria-label="Separar la anatomía"><output id="asepo">0 %</output></label></div></details>
+          <details class="atl-plg"><summary><b>Sistemas</b><span class="muted">Secciones disponibles</span></summary>
+          <div class="atl-row"><button class="btn ghost small" data-p="todos">Todos</button><button class="btn ghost small" data-p="esqueleto">Esqueleto</button>
             <button class="btn ghost small" data-p="organos">Órganos</button><button class="btn ghost small" data-p="nada">Ninguno</button>
             <span class="muted" id="an" style="font-size:.85rem;margin-left:6px"></span><button class="btn ghost small" id="amostrar" hidden>Mostrar todo</button></div>
           <div class="atl-sys">${SYS.map(([sid, name, col], i) => `<div><label><input type="checkbox" data-s="${sid}"><i style="background:#${col.toString(16).padStart(6, '0')}"></i>${name}<small>${cuenta[i]}</small></label>
-            <button data-solo="${sid}" title="Mostrar solo ${name}">solo</button></div>`).join('')}</div>`;
+            <button data-solo="${sid}" title="Mostrar solo ${name}">solo</button></div>`).join('')}</div></details>`;
         api.ctrls.appendChild(ui);
         ui.querySelectorAll('[data-v]').forEach((b) => { b.onclick = () => vista(b.dataset.v); });
         ui.querySelectorAll('input[data-s]').forEach((c) => { c.onchange = () => { on[c.dataset.s] = c.checked; aplicar(); repaint(); }; });
