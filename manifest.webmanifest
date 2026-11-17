@@ -1,0 +1,12 @@
+{
+  "name": "Lumen · Tutor y laboratorio 3D",
+  "short_name": "Lumen",
+  "description": "Tutor de ciencias, idiomas y programación con laboratorio 3D.",
+  "lang": "es",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1016",
+  "theme_color": "#0f1016",
+  "icons": [{ "src": "icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
