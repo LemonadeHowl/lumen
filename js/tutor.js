@@ -843,6 +843,36 @@
 
   // Al seleccionar un texto (en el móvil, manteniendo pulsada una palabra) aparece un botón para guardarlo como tarjeta.
   (function () {
+    // En las materias de idiomas el reverso se rellena solo con la traducción al español: primero se busca en los datos de
+    // la propia app (tus flashcards, el vocabulario por temas, los cursos con sus diálogos y las palabras del día); si no
+    // aparece y hay conexión, se pide al traductor gratuito MyMemory. El reverso sigue siendo editable.
+    // En las demás materias el reverso se deja vacío para que lo escribas tú.
+    const COD = { aleman: 'de', frances: 'fr', italiano: 'it', catalan: 'ca' };
+    const normT = (t) => String(t).toLowerCase().replace(/[’`´]/g, "'").replace(/[¿?¡!.,;:«»"“”()[\]…]/g, ' ').replace(/\s+/g, ' ').trim();
+    const sinArt = (t) => t.replace(/^l'/, '').replace(/^(der|die|das|den|dem|des|ein|eine|einen|einem|einer|le|la|les|un|une|du|il|lo|gli|i|uno|una|el|els|en|na)\s+/, '');
+    const dic = {};
+    function diccionario(id) {
+      if (dic[id]) return dic[id];
+      const d = new Map(), col = LANGS[id][1], put = (k, es) => { if (!k || !es) return; const n = normT(k); [n, sinArt(n)].forEach((x) => { if (x && !d.has(x)) d.set(x, es); }); };
+      (window.VOCAB || []).forEach((tp) => tp.w.concat(tp.p).forEach((r) => put(r[col], r[0])));
+      ((window.CURSO && CURSO[id]) || []).forEach((N) => N.u.forEach((U) => { U.v.forEach((w) => put(w[0], w[1])); U.d.l.forEach((l) => put(l[1], l[2])); }));
+      ((window.WORDS && WORDS[id]) || []).forEach((w) => put(w[0], w[1]));
+      return (dic[id] = d);
+    }
+    function traducirLocal(id, t) {
+      const n = normT(t), c = st(id).deck.find((x) => normT(x.f) === n);
+      if (c) return c.b;
+      const d = diccionario(id); return d.get(n) || d.get(sinArt(n)) || null;
+    }
+    async function traducirEnLinea(id, t) {
+      if (!navigator.onLine) return null;
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 6000);
+      try {
+        const r = await fetch('https://api.mymemory.translated.net/get?langpair=' + COD[id] + '|es&q=' + encodeURIComponent(t), { signal: ctl.signal });
+        const j = await r.json(), tr = j && j.responseData && j.responseData.translatedText;
+        return tr && +j.responseStatus === 200 && !/MYMEMORY WARNING/i.test(tr) ? tr : null;
+      } catch (e) { return null; } finally { clearTimeout(tm); }
+    }
     const bub = document.createElement('button'); bub.className = 'selbub'; bub.type = 'button'; bub.textContent = '＋ Flashcard'; bub.hidden = true; document.body.appendChild(bub);
     const pan = document.createElement('div'); pan.className = 'selpan card'; pan.hidden = true; document.body.appendChild(pan);
     let txt = '', tm = 0;
@@ -855,12 +885,34 @@
     }, 280); });
     bub.addEventListener('pointerdown', (e) => e.preventDefault()); // no perder la selección al pulsar
     bub.onclick = () => {
-      const h = location.hash.replace(/^#\/?/, '').split('/'), actual = BANK[h[2]] ? h[2] : (LANGS[S.lang] ? S.lang : 'aleman');
+      const h = location.hash.replace(/^#\/?/, '').split('/'), maqueta = h[0] === 'lab' && window.MODELS && (MODELS.find((x) => x.id === h[1]) || MODELS[0]);
+      const actual = BANK[h[2]] ? h[2] : maqueta && BANK[maqueta.subj] ? maqueta.subj : (LANGS[S.lang] ? S.lang : 'aleman');
       bub.hidden = true; pan.hidden = false;
       pan.innerHTML = `<h3 style="margin-top:0">Nueva flashcard</h3><label>Anverso<input id="sf" value="${esc(txt)}"></label><label>Reverso<input id="sb" placeholder="Significado o explicación"></label>
+        <p class="muted small" id="sst" style="margin:-4px 0 10px"></p>
         <label>Materia<select id="ss">${Object.keys(BANK).map((k) => `<option value="${k}"${k === actual ? ' selected' : ''}>${esc(BANK[k].name)}</option>`).join('')}</select></label>
         <div class="row"><button class="btn" id="sok">Guardar</button><button class="btn ghost" id="sno">Cancelar</button></div>`;
-      const q = (x) => pan.querySelector(x); q('#sb').focus();
+      const q = (x) => pan.querySelector(x), sb = q('#sb'), aviso = q('#sst');
+      // Solo se traduce si el texto se ha seleccionado dentro de una materia de idiomas; en el resto de la app
+      // (ciencias, programación, laboratorio, portada, buscador) el reverso queda en blanco para escribirlo
+      const enIdiomas = h[0] === 'tutor' && h[1] === 'idiomas' && !!LANGS[h[2]];
+      let auto = ''; // última traducción puesta automáticamente: se puede sustituir; lo que escribas tú, no
+      const rellenar = async () => {
+        const id = q('#ss').value, t = q('#sf').value.trim();
+        if (sb.value.trim() && sb.value !== auto) return;
+        if (!enIdiomas || !LANGS[id] || !t) { if (sb.value === auto) sb.value = ''; auto = ''; aviso.textContent = ''; return; }
+        const loc = traducirLocal(id, t);
+        if (loc) { sb.value = auto = loc; aviso.textContent = 'Traducción del vocabulario de Lumen. Puedes cambiarla.'; return; }
+        aviso.textContent = navigator.onLine ? 'Traduciendo…' : '';
+        const tr = await traducirEnLinea(id, t);
+        if (pan.hidden || q('#sf').value.trim() !== t || q('#ss').value !== id || (sb.value.trim() && sb.value !== auto)) return;
+        if (tr) { sb.value = auto = tr; aviso.textContent = 'Traducción automática (MyMemory). Revísala si hace falta.'; }
+        else aviso.textContent = navigator.onLine ? 'No se ha encontrado una traducción: escríbela tú.' : 'Sin conexión y no está en el vocabulario de Lumen: escribe la traducción.';
+      };
+      let tq = 0;
+      q('#sf').oninput = () => { clearTimeout(tq); tq = setTimeout(rellenar, 500); };
+      q('#ss').onchange = rellenar;
+      sb.focus(); rellenar();
       q('#sno').onclick = () => { pan.hidden = true; };
       q('#sok').onclick = () => {
         const f = q('#sf').value.trim(), bk = q('#sb').value.trim(), id = q('#ss').value; if (!f || !bk) { q('#sb').focus(); return; }
